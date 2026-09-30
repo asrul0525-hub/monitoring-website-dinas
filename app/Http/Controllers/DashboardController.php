@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Dinas;
 use App\Models\KlasterOpd;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 
 class DashboardController extends Controller
 {
@@ -46,5 +47,17 @@ class DashboardController extends Controller
 
         // 5. Return View Dashboard beserta Data
         return view('dashboard', compact('dinasList', 'stats', 'klasters'));
+    }
+
+    public function syncRss()
+    {
+        try {
+            // Memanggil Artisan Command 'rss:fetch' yang sudah kita buat
+            Artisan::call('rss:fetch');
+
+            return redirect()->back()->with('success', 'Penarikan data RSS dari seluruh website OPD berhasil dijalankan!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal memperbarui data RSS: ' . $e->getMessage());
+        }
     }
 }

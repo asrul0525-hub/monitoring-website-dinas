@@ -24,10 +24,15 @@
                         <p class="text-xs text-slate-400">Dinas Komunikasi dan Informatika</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-4 text-sm">
-                    <span class="bg-slate-800 px-3 py-1 rounded-full text-slate-300 border border-slate-700">
-                        <i class="fa-regular fa-clock me-1"></i> Update Otomatis (RSS)
-                    </span>
+                <div class="flex items-center space-x-3">
+                    <form action="{{ route('dashboard.sync') }}" method="POST">
+                        @csrf
+                        <button type="submit" 
+                                onclick="this.disabled=true; this.form.submit();" 
+                                class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition shadow flex items-center">
+                            <i class="fa-solid fa-rotate me-2"></i> Sinkronkan RSS
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -41,7 +46,24 @@
             <h2 class="text-2xl font-bold text-slate-900">Dashboard Status Website OPD</h2>
             <p class="text-slate-600 text-sm mt-1">Pemantauan keaktifan update berita dan artikel seluruh Organisasi Perangkat Daerah.</p>
         </div>
+        <!-- Alert Notifikasi -->
+        @if(session('success'))
+            <div class="mb-6 p-4 bg-emerald-100 border-l-4 border-emerald-500 text-emerald-800 rounded-r-lg shadow-sm flex justify-between items-center">
+                <div class="flex items-center">
+                    <i class="fa-solid fa-circle-check me-2 text-lg"></i>
+                    <span>{{ session('success') }}</span>
+                </div>
+            </div>
+        @endif
 
+        @if(session('error'))
+            <div class="mb-6 p-4 bg-rose-100 border-l-4 border-rose-500 text-rose-800 rounded-r-lg shadow-sm flex justify-between items-center">
+                <div class="flex items-center">
+                    <i class="fa-solid fa-circle-exclamation me-2 text-lg"></i>
+                    <span>{{ session('error') }}</span>
+                </div>
+            </div>
+        @endif
         <!-- Metric Cards / Ringkasan Statistik -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
             <!-- Total Dinas -->
