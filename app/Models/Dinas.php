@@ -9,36 +9,21 @@ class Dinas extends Model
 {
     use HasFactory;
 
-    protected $table = 'dinas';
+    protected $table = 'dinas'; // Pastikan nama tabel sesuai di database
 
     protected $fillable = [
         'nama_dinas',
-        'url_website',
-        'klaster',
+        'singkatan',
+        'klaster_opd_id',
+        'domain_url',
         'status',
-        'http_status_code',
-        'response_time_ms',
-        'last_checked_at',
+        'http_status',
+        'response_time',
     ];
 
-    protected $casts = [
-        'last_checked_at' => 'datetime',
-    ];
-
-    // Relasi ke Klaster OPD
+    // Relasi ke Model KlasterOpd
     public function klaster()
     {
         return $this->belongsTo(KlasterOpd::class, 'klaster_opd_id');
-    }
-
-    // Relasi ke RSS Logs
-    public function rssLogs()
-    {
-        return $this->hasMany(RssLog::class, 'dinas_id');
-    }
-
-    public function notifikasis()
-    {
-        return $this->hasMany(Notifikasi::class, 'dinas_id');
     }
 }
