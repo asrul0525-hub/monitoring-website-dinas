@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OpdController;
+use App\Http\Controllers\NotifikasiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,3 +27,6 @@ Route::post('/logout', function () {
     session()->regenerateToken();
     return redirect('/'); // Ubah redirect ke halaman login atau halaman utama
 })->name('logout');
+
+Route::get('/api/notifikasi', [NotifikasiController::class, 'index'])->name('api.notifikasi.index');
+Route::post('/api/notifikasi/mark-read', [NotifikasiController::class, 'markAsRead'])->name('api.notifikasi.markRead');

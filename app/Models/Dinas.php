@@ -10,22 +10,19 @@ class Dinas extends Model
     use HasFactory;
 
     protected $table = 'dinas';
-    
+
     protected $fillable = [
-        'klaster_opd_id',
         'nama_dinas',
-        'singkatan',
-        'domain_url',
-        'rss_url',
-        'pic_nama',
-        'last_post_title',
-        'last_post_link',
-        'last_post_date',
+        'url_website',
+        'klaster',
         'status',
+        'http_status_code',
+        'response_time_ms',
+        'last_checked_at',
     ];
 
     protected $casts = [
-        'last_post_date' => 'datetime',
+        'last_checked_at' => 'datetime',
     ];
 
     // Relasi ke Klaster OPD
@@ -38,5 +35,10 @@ class Dinas extends Model
     public function rssLogs()
     {
         return $this->hasMany(RssLog::class, 'dinas_id');
+    }
+
+    public function notifikasis()
+    {
+        return $this->hasMany(Notifikasi::class, 'dinas_id');
     }
 }

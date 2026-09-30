@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Dinas;
 use App\Models\KlasterOpd; // Menggunakan model KlasterOpd
+use App\Services\RssSyncService;
 use Illuminate\Http\Request;
 
 class OpdController extends Controller
@@ -43,7 +44,7 @@ class OpdController extends Controller
     }
 
     // Simpan Data OPD Baru
-    public function store(Request $request)
+    public function store(Request $request, RssSyncService $rssService) // <-- Diberi RssSyncService $rssService
     {
         $request->validate([
             'nama_dinas'     => 'required|string|max:255',
@@ -54,7 +55,8 @@ class OpdController extends Controller
             'pic_nama'       => 'nullable|string|max:255',
         ]);
 
-        Dinas::create([
+        // 1. Simpan dan tampung hasil pembuatan ke variabel $dinas
+        $dinas = Dinas::create([
             'nama_dinas'     => $request->nama_dinas,
             'singkatan'      => $request->singkatan,
             'klaster_opd_id' => $request->klaster_opd_id,
@@ -64,7 +66,12 @@ class OpdController extends Controller
             'status'         => 'pasif', // Status default sebelum di-sync
         ]);
 
-        return redirect()->route('opd.index')->with('success', 'Data OPD berhasil ditambahkan!');
+        // 2. Jalankan sinkronisasi RSS instan
+        if (!empty($dinas->rss_url)) {
+            $rssService->syncDinas($dinas);
+        }
+
+        return redirect()->route('opd.index')->with('success', 'Data OPD berhasil ditambahkan dan disinkronkan!');
     }
 
     // Tampilkan Form Edit OPD
@@ -76,7 +83,7 @@ class OpdController extends Controller
     }
 
     // Update Data OPD
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, RssSyncService $rssService) // <-- Diberi RssSyncService $rssService
     {
         $dinas = Dinas::findOrFail($id);
 
@@ -91,7 +98,12 @@ class OpdController extends Controller
 
         $dinas->update($request->all());
 
-        return redirect()->route('opd.index')->with('success', 'Data OPD berhasil diperbarui!');
+        // Jalankan sinkronisasi RSS instan menggunakan data yang baru diperbarui
+        if (!empty($dinas->rss_url)) {
+            $rssService->syncDinas($dinas);
+        }
+
+        return redirect()->route('opd.index')->with('success', 'Data OPD berhasil diperbarui dan disinkronkan!');
     }
 
     // Hapus Data OPD
