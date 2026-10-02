@@ -136,7 +136,7 @@
                                 </div>
                             </td>
                         </tr>
-                        @endforeach
+                    @endforeach
                     @else
                         <tr>
                             <td colspan="4" class="px-6 py-12 text-center text-slate-400">

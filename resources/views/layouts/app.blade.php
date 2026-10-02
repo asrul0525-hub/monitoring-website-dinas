@@ -3,11 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Monitoring Website OPD - Kominfo HSU')</title>
+    <title>@yield('title', 'Monitoring Keaktifan Web - Kominfo HSU')</title>
+    
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <!-- FontAwesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- SweetAlert2 CDN (Ditambahkan di sini agar siap dipakai di seluruh halaman) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="bg-slate-50 font-sans antialiased text-slate-800 flex min-h-screen">
 
@@ -19,7 +24,7 @@
                 <i class="fa-solid fa-chart-line text-xl text-white"></i>
             </div>
             <div>
-                <h1 class="font-bold text-base tracking-wide leading-tight text-white">MONITORING OPD</h1>
+                <h1 class="font-bold text-base tracking-wide leading-tight text-white">MONITORING WEB</h1>
                 <p class="text-[11px] text-slate-400">Diskominfo HSU</p>
             </div>
         </div>
@@ -77,7 +82,7 @@
                 <i class="fa-solid fa-cubes text-blue-600"></i>
                 <span class="text-slate-400">Sistem</span>
                 <span>/</span>
-                <span class="font-semibold text-slate-800">@yield('page_title', 'Dashboard Pemantauan Digital Dinas')</span>
+                <span class="font-semibold text-slate-800">@yield('page_title', 'Dashboard Pemantauan Keaktifan Website')</span>
             </div>
 
             <!-- Right Elements: Clock, Notification & Profile -->
@@ -109,13 +114,13 @@
                         <!-- Notification List -->
                         <div class="max-h-72 overflow-y-auto divide-y divide-slate-100">
                             <!-- Item 1 -->
-                            <a href="{{ route('dashboard') }}?status=pasif" class="p-3.5 flex items-start space-x-3 hover:bg-slate-50 transition block">
+                            <a href="{{ route('dashboard') }}?status=down" class="p-3.5 flex items-start space-x-3 hover:bg-slate-50 transition block">
                                 <div class="w-8 h-8 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 mt-0.5">
                                     <i class="fa-solid fa-triangle-exclamation text-xs"></i>
                                 </div>
                                 <div>
-                                    <p class="text-xs font-semibold text-slate-800">3 OPD Terdeteksi Pasif</p>
-                                    <p class="text-[11px] text-slate-500 mt-0.5">Website tidak ada pembaruan artikel lebih dari 30 hari.</p>
+                                    <p class="text-xs font-semibold text-slate-800">Website Offline Terdeteksi</p>
+                                    <p class="text-[11px] text-slate-500 mt-0.5">Beberapa website OPD mengalami gangguan koneksi / HTTP error.</p>
                                     <span class="text-[10px] text-slate-400 mt-1 block">Baru saja</span>
                                 </div>
                             </a>
@@ -126,8 +131,8 @@
                                     <i class="fa-solid fa-rotate text-xs"></i>
                                 </div>
                                 <div>
-                                    <p class="text-xs font-semibold text-slate-800">Sinkronisasi RSS Selesai</p>
-                                    <p class="text-[11px] text-slate-500 mt-0.5">Seluruh feed RSS OPD berhasil diperbarui.</p>
+                                    <p class="text-xs font-semibold text-slate-800">Pengecekan HTTP Selesai</p>
+                                    <p class="text-[11px] text-slate-500 mt-0.5">Status HTTP keaktifan website OPD berhasil diperbarui.</p>
                                     <span class="text-[10px] text-slate-400 mt-1 block">1 jam lalu</span>
                                 </div>
                             </a>
@@ -138,8 +143,8 @@
                                     <i class="fa-solid fa-globe text-xs"></i>
                                 </div>
                                 <div>
-                                    <p class="text-xs font-semibold text-slate-800">URL RSS Perlu Diperiksa</p>
-                                    <p class="text-[11px] text-slate-500 mt-0.5">Beberapa domain OPD mengembalikan error timeout.</p>
+                                    <p class="text-xs font-semibold text-slate-800">URL OPD Perlu Perbaikan</p>
+                                    <p class="text-[11px] text-slate-500 mt-0.5">Beberapa URL domain OPD mengembalikan error timeout.</p>
                                     <span class="text-[10px] text-slate-400 mt-1 block">3 jam lalu</span>
                                 </div>
                             </a>
@@ -153,6 +158,7 @@
                         </div>
                     </div>
                 </div>
+
                 <!-- User Profile -->
                 <div class="flex items-center space-x-3 border-l pl-5 border-slate-200">
                     <div class="w-9 h-9 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-sm shadow-sm">
@@ -171,7 +177,7 @@
 
         <!-- Dynamic Main Content Area -->
         <main class="flex-1 p-8">
-            <!-- Flash Session Alert -->
+            <!-- Flash Session Alert (Jika Menggunakan Redirect Flash Session) -->
             @if(session('success'))
                 <div class="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 rounded-r-xl shadow-sm flex items-center">
                     <i class="fa-solid fa-circle-check me-3 text-lg text-emerald-600"></i>
@@ -197,9 +203,8 @@
         function updateClock() {
             const now = new Date();
 
-            // Ambil Hari dan Tanggal dalam format Bahasa Indonesia
             const dateOptions = {
-                timeZone: 'Asia/Makassar', // Waktu Indonesia Tengah (WITA)
+                timeZone: 'Asia/Makassar',
                 weekday: 'long',
                 day: 'numeric',
                 month: 'short',
@@ -207,7 +212,6 @@
             };
             const dateString = new Intl.DateTimeFormat('id-ID', dateOptions).format(now);
 
-            // Ambil Jam, Menit, dan Detik secara terpisah
             const timeOptions = {
                 timeZone: 'Asia/Makassar',
                 hour: '2-digit',
@@ -216,7 +220,6 @@
                 hour12: false
             };
 
-            // Format waktu menjadi HH:mm:ss
             const timeParts = new Intl.DateTimeFormat('id-ID', timeOptions).formatToParts(now);
             let hours = '', minutes = '', seconds = '';
 
@@ -226,7 +229,6 @@
                 if (part.type === 'second') seconds = part.value;
             });
 
-            // Gabungkan format secara presisi: Hari, Tanggal Bulan Tahun • HH:mm:ss WITA
             document.getElementById('realtime-clock').innerText = `${dateString} • ${hours}:${minutes}:${seconds} WITA`;
         }
 
@@ -234,8 +236,8 @@
         updateClock();
     </script>
 
+    <!-- Script Dropdown Notifikasi -->
     <script>
-        // Toggle Dropdown Notifikasi
         const notifButton = document.getElementById('notifButton');
         const notifDropdown = document.getElementById('notifDropdown');
 
@@ -245,7 +247,6 @@
                 notifDropdown.classList.toggle('hidden');
             });
 
-            // Tutup dropdown saat mengeklik di luar area dropdown
             document.addEventListener('click', function(e) {
                 if (!notifDropdown.contains(e.target) && !notifButton.contains(e.target)) {
                     notifDropdown.classList.add('hidden');

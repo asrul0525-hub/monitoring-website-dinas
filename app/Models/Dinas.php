@@ -9,19 +9,22 @@ class Dinas extends Model
 {
     use HasFactory;
 
-    protected $table = 'dinas'; // Pastikan nama tabel sesuai di database
+    protected $table = 'dinas';
 
     protected $fillable = [
+        'klaster_opd_id',
         'nama_dinas',
         'singkatan',
-        'klaster_opd_id',
         'domain_url',
-        'status',
         'http_status',
         'response_time',
+        'http_status_code',
+        'response_time_ms',
+        'last_checked_at',
+        'pic_nama',
+        'status',
     ];
 
-    // Relasi ke Model KlasterOpd
     public function klaster()
     {
         return $this->belongsTo(KlasterOpd::class, 'klaster_opd_id');

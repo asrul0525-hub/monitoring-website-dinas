@@ -3,6 +3,9 @@
 @section('page_title', 'Dashboard Status Website OPD')
 
 @section('content')
+<!-- Import SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <style>
     @keyframes fadeInUp {
         from {
@@ -39,9 +42,13 @@
             </div>
         </div>
         <div>
-            <button id="btnSync" onclick="refreshStatus()"
-               class="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium shadow-md shadow-blue-500/20 transition duration-200 active:scale-95">
-                <i id="syncIcon" class="fa-solid fa-rotate text-xs"></i>
+            <!-- Tombol Cek Status -->
+            <button
+                type="button"
+                id="btnSync"
+                onclick="refreshStatus(event)"
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-150 inline-flex items-center gap-2 cursor-pointer">
+                <i id="syncIcon" class="fas fa-sync-alt"></i>
                 <span id="syncText">Cek Status Website</span>
             </button>
         </div>
@@ -54,7 +61,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Website</p>
-                    <h3 class="text-3xl font-extrabold text-slate-900 mt-1">{{ $totalWebsite ?? 0 }}</h3>
+                    <h3 id="stat-total" class="text-3xl font-extrabold text-slate-900 mt-1">{{ $totalWebsite ?? 0 }}</h3>
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-slate-900 group-hover:text-white transition duration-300">
                     <i class="fa-solid fa-globe text-lg"></i>
@@ -70,7 +77,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Online / Aktif</p>
-                    <h3 class="text-3xl font-extrabold text-emerald-600 mt-1">{{ $aktifCount ?? 0 }}</h3>
+                    <h3 id="stat-aktif" class="text-3xl font-extrabold text-emerald-600 mt-1">{{ $aktifCount ?? 0 }}</h3>
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition duration-300">
                     <i class="fa-solid fa-circle-check text-lg"></i>
@@ -87,7 +94,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-[11px] font-bold uppercase tracking-wider text-amber-600">Lambat / Warning</p>
-                    <h3 class="text-3xl font-extrabold text-amber-600 mt-1">{{ $kurangAktifCount ?? 0 }}</h3>
+                    <h3 id="stat-warning" class="text-3xl font-extrabold text-amber-600 mt-1">{{ $kurangAktifCount ?? 0 }}</h3>
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition duration-300">
                     <i class="fa-solid fa-triangle-exclamation text-lg"></i>
@@ -103,7 +110,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-[11px] font-bold uppercase tracking-wider text-rose-600">Offline / Down</p>
-                    <h3 class="text-3xl font-extrabold text-rose-600 mt-1">{{ $pasifCount ?? 0 }}</h3>
+                    <h3 id="stat-pasif" class="text-3xl font-extrabold text-rose-600 mt-1">{{ $pasifCount ?? 0 }}</h3>
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600 group-hover:bg-rose-600 group-hover:text-white transition duration-300">
                     <i class="fa-solid fa-circle-xmark text-lg"></i>
@@ -132,7 +139,7 @@
             <div class="relative">
                 <select name="klaster_id" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition duration-200">
                     <option value="">-- Semua Klaster --</option>
-                    @if(isset($klasters))
+                    @if(isset($klasters) && count($klasters) > 0)
                         @foreach($klasters as $klaster)
                             <option value="{{ $klaster->id }}" {{ request('klaster_id') == $klaster->id ? 'selected' : '' }}>
                                 {{ $klaster->nama_klaster }}
@@ -173,7 +180,7 @@
                 <h3 class="font-bold text-slate-900 text-sm">Daftar Website Organisasi Perangkat Daerah</h3>
             </div>
             <span class="text-xs font-semibold px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg">
-                Menampilkan {{ isset($dinasList) ? $dinasList->count() : 0 }} data
+                Menampilkan {{ isset($dinasList) ?$dinasList->count() : 0 }} data
             </span>
         </div>
 
@@ -190,60 +197,72 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
-                    @if(isset($dinasList) && $dinasList->count() > 0)
-                        @foreach($dinasList as $dinas)
-                            <tr class="hover:bg-slate-50/80 transition duration-150">
-                                <td class="px-6 py-4">
-                                    <div class="font-bold text-slate-900 text-sm">{{ $dinas->nama_dinas }}</div>
-                                    <div class="flex items-center space-x-2 mt-1">
-                                        <span class="bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded">
-                                            {{ $dinas->singkatan }}
-                                        </span>
-                                        @if($dinas->url_website || $dinas->domain_url)
-                                            <a href="{{ $dinas->url_website ?? $dinas->domain_url }}" target="_blank" class="text-blue-600 hover:underline inline-flex items-center text-[11px]">
-                                                <i class="fa-solid fa-up-right-from-square text-[9px] me-1"></i> Buka Web
-                                            </a>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-lg font-medium">
-                                        {{ $dinas->klaster ? $dinas->klaster->nama_klaster : '-' }}
+                    @forelse($dinasList ?? [] as $dinas)
+                        <tr id="row-dinas-{{ $dinas->id }}" class="hover:bg-slate-50/80 transition duration-150">
+                            <td class="px-6 py-4">
+                                <div class="font-bold text-slate-900 text-sm">{{ $dinas->nama_dinas }}</div>
+                                <div class="flex items-center space-x-2 mt-1">
+                                    <span class="bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded">
+                                        {{ $dinas->singkatan }}
                                     </span>
-                                </td>
-                                <td class="px-6 py-4 font-semibold">
-                                    @if(($dinas->http_status ?? 200) == 200)
-                                        <span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded text-[11px]">200 OK</span>
-                                    @elseif(($dinas->http_status ?? 0) == 0)
-                                        <span class="text-slate-400 bg-slate-100 px-2 py-0.5 rounded text-[11px]">-</span>
-                                    @else
-                                        <span class="text-rose-600 bg-rose-50 px-2 py-0.5 rounded text-[11px]">{{ $dinas->http_status }} Error</span>
+                                    @if($dinas->url_website || $dinas->domain_url)
+                                        <a href="{{ $dinas->url_website ?? $dinas->domain_url }}" target="_blank" class="text-blue-600 hover:underline">
+                                            <i class="fa-solid fa-up-right-from-square text-[9px] me-1"></i> Buka Web
+                                        </a>
                                     @endif
-                                </td>
-                                <td class="px-6 py-4 text-slate-700 font-medium">
-                                    {{ $dinas->response_time ? $dinas->response_time . ' ms' : '-' }}
-                                </td>
-                                <td class="px-6 py-4 text-slate-500">
-                                    {{ $dinas->updated_at ? $dinas->updated_at->diffForHumans() : '-' }}
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    @if(($dinas->status ?? 'online') == 'online')
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 me-1.5 animate-pulse"></span> ONLINE
-                                        </span>
-                                    @elseif(($dinas->status ?? '') == 'warning')
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/60">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 me-1.5"></span> SLOW
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200/60">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500 me-1.5"></span> OFFLINE
-                                        </span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    @else
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-lg font-medium">
+                                    {{ $dinas->klaster ? $dinas->klaster->nama_klaster : '-' }}
+                                </span>
+                            </td>
+
+                            <!-- HTTP STATUS -->
+                            <td class="px-6 py-4 font-semibold col-http-status">
+                                @php $code = $dinas->http_status ?? $dinas->http_status_code; @endphp
+                                @if($code === 200)
+                                    <span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded text-[11px]">200 OK</span>
+                                @elseif($code === 0 || $code === null)
+                                    <span class="text-rose-600 bg-rose-50 px-2 py-0.5 rounded text-[11px]">0 Timeout</span>
+                                @else
+                                    <span class="text-rose-600 bg-rose-50 px-2 py-0.5 rounded text-[11px]">{{ $code }} Error</span>
+                                @endif
+                            </td>
+
+                            <!-- WAKTU RESPON -->
+                            <td class="px-6 py-4 text-slate-700 font-medium col-response-time">
+                                @php $respTime = $dinas->response_time ?? $dinas->response_time_ms; @endphp
+                                @if(!is_null($respTime) && $respTime > 0)                                     {{$respTime }} ms
+                                @else
+                                    <span class="text-slate-400 font-normal">-</span>
+                                @endif
+                            </td>
+
+                            <!-- PENGECEKAN TERAKHIR -->
+                            <td class="px-6 py-4 text-slate-500 col-last-checked">
+                                @php $lastCheck = $dinas->last_checked_at ?? $dinas->updated_at; @endphp
+                                {{ $lastCheck ? \Carbon\Carbon::parse($lastCheck)->diffForHumans() : '-' }}
+                            </td>
+
+                            <!-- STATUS SERVER -->
+                            <td class="px-6 py-4 text-center col-server-status">
+                                @if(($dinas->status ?? 'online') == 'online')
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 me-1.5 animate-pulse"></span> ONLINE
+                                    </span>
+                                @elseif(($dinas->status ?? '') == 'warning')
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/60">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 me-1.5"></span> SLOW
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200/60">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500 me-1.5"></span> OFFLINE
+                                    </span>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
                         <tr>
                             <td colspan="6" class="px-6 py-12 text-center text-slate-400">
                                 <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -253,7 +272,7 @@
                                 <p class="text-xs text-slate-400 mt-1">Tambahkan data OPD terlebih dahulu di menu Kelola OPD.</p>
                             </td>
                         </tr>
-                    @endif
+                    @endforelse
                 </tbody>
             </table>
         </div>
@@ -267,19 +286,142 @@
 </div>
 
 <script>
-    function refreshStatus() {
+    // 1. Handler Tombol Manual
+    function refreshStatus(e) {
+        if (e) e.preventDefault();
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Memeriksa Status...',
+                text: 'Sedang mengecek koneksi ke seluruh website OPD.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+        }
+
+        fetchBackgroundData(true);
+    }
+
+    // 2. Main Fetch Function
+    function fetchBackgroundData(isManualClick = false) {
+        const btn = document.getElementById('btnSync');
         const icon = document.getElementById('syncIcon');
         const text = document.getElementById('syncText');
-        const btn = document.getElementById('btnSync');
 
-        btn.disabled = true;
-        btn.classList.add('opacity-80', 'cursor-not-allowed');
-        icon.classList.add('fa-spin');
-        text.innerText = 'Mengecek Server...';
+        if (btn) btn.style.pointerEvents = 'none';
+        if (icon) icon.classList.add('fa-spin');
+        if (text) text.innerText = 'Memeriksa...';
 
-        setTimeout(() => {
-            window.location.reload();
-        }, 800);
+        fetch("{{ route('dinas.check-status-json') }}", {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Gagal terhubung ke server (HTTP ' + response.status + ')');
+                }
+                return response.json();
+            })
+            .then(res => {
+                if (res.status === 'success') {
+                    if (res.totalWebsite !== undefined) {
+                        const el = document.getElementById('stat-total');
+                        if (el) el.innerText = res.totalWebsite;
+                    }
+                    if (res.aktifCount !== undefined) {
+                        const el = document.getElementById('stat-aktif');
+                        if (el) el.innerText = res.aktifCount;
+                    }
+                    if (res.kurangAktifCount !== undefined) {
+                        const el = document.getElementById('stat-warning');
+                        if (el) el.innerText = res.kurangAktifCount;
+                    }
+                    if (res.pasifCount !== undefined) {
+                        const el = document.getElementById('stat-pasif');
+                        if (el) el.innerText = res.pasifCount;
+                    }
+
+                    if (res.data) {
+                        const items = Array.isArray(res.data) ? res.data : (res.data.data || []);
+                        items.forEach(dinas => {
+                            const row = document.getElementById(`row-dinas-${dinas.id}`);
+                            if (row) {
+                                const httpCode = dinas.http_status ?? dinas.http_status_code;
+                                const respTime = dinas.response_time ?? dinas.response_time_ms;
+
+                                const colHttp = row.querySelector('.col-http-status');
+                                if (colHttp) {
+                                    if (httpCode === 200) {
+                                        colHttp.innerHTML = `<span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded text-[11px]">200 OK</span>`;
+                                    } else if (httpCode === 0 || httpCode === null) {
+                                        colHttp.innerHTML = `<span class="text-rose-600 bg-rose-50 px-2 py-0.5 rounded text-[11px]">0 Timeout</span>`;
+                                    } else {
+                                        colHttp.innerHTML = `<span class="text-rose-600 bg-rose-50 px-2 py-0.5 rounded text-[11px]">${httpCode} Error</span>`;
+                                    }
+                                }
+
+                                const colResp = row.querySelector('.col-response-time');
+                                if (colResp) {
+                                    colResp.innerHTML = (respTime && respTime > 0)
+                                        ? `${respTime} ms`
+                                        : `<span class="text-slate-400 font-normal">-</span>`;
+                                }
+
+                                const colLast = row.querySelector('.col-last-checked');
+                                if (colLast) colLast.innerText = 'baru saja';
+
+                                const colStatus = row.querySelector('.col-server-status');
+                                if (colStatus) {
+                                    if (dinas.status === 'online') {
+                                        colStatus.innerHTML = `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 me-1.5 animate-pulse"></span> ONLINE</span>`;
+                                    } else if (dinas.status === 'warning') {
+                                        colStatus.innerHTML = `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/60"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 me-1.5"></span> SLOW</span>`;
+                                    } else {
+                                        colStatus.innerHTML = `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200/60"><span class="w-1.5 h-1.5 rounded-full bg-rose-500 me-1.5"></span> OFFLINE</span>`;
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    if (isManualClick && typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Pengecekan Selesai!',
+                            text: 'Status keaktifan seluruh website OPD berhasil diperbarui.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                } else {
+                    throw new Error(res.message || 'Respon server tidak valid');
+                }
+            })
+            .catch(err => {
+                console.error('Error sync status:', err);
+                if (isManualClick && typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal Memeriksa!',
+                        text: err.message || 'Terjadi kesalahan saat menghubungkan ke server.',
+                        confirmButtonColor: '#2563eb'
+                    });
+                }
+            })
+            .finally(() => {
+                if (btn) btn.style.pointerEvents = 'auto';
+                if (icon) icon.classList.remove('fa-spin');
+                if (text) text.innerText = 'Cek Status Website';
+            });
     }
+
+    // 3. Auto Refresh setiap 30 detik
+    setInterval(() => {
+        fetchBackgroundData(false);
+    }, 30000);
 </script>
 @endsection
